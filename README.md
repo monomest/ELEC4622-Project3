@@ -1,5 +1,5 @@
 ## ELEC4622 Project 2
-Renee Lu, z5160268 | July, 2020
+Renee Lu, z5160268 | August, 2020
 
 ## Tasks Overview
 1. **Task 1** Monochrome to Bi-level Conversion
