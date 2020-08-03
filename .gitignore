@@ -1,0 +1,22 @@
+# Don't track content of these folders
+Data/
+Executables/
+Project3/Task1/Debug
+Project3/Task2/Debug
+Project3/Task3/Debug
+Project3/Task4/Debug
+Project3/Task5/Debug
+Project3/Task6/Debug
+Project3/Task1/Release
+Project3/Task2/Release
+Project3/Task3/Release
+Project3/Task4/Release
+Project3/Task5/Release
+Project3/Task6/Release
+
+# Don't track Visual Studio created files
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.vs
