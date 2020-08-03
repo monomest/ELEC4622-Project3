@@ -2,7 +2,8 @@
 Renee Lu, z5160268 | July, 2020
 
 ## Tasks Overview
-1. **Task 1** Bi-level Conversion
+1. **Task 1** Monochrome to Bi-level Conversion
+2. **Task 2** Morphological Erosion
 
 ## Code Location
 The solution file is found in:
@@ -35,4 +36,4 @@ To run Task 1 give the following command line arguments:
 [input bmp file path] [output bmp file path] [threshold T]
 
 To run Task 2 give the following command line arguments:
-[input bmp file path] [output bmp file path] [A set pairs]
+[input bmp file path] [output bmp file path] [Structuring set location pairs]
