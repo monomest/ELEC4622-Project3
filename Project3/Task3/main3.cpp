@@ -1,7 +1,7 @@
 /*****************************************************************************/
-// File: main1.cpp
+// File: main3.cpp
 // Author: David Taubman & Renee Lu
-// Last Revised: 22 July, 2020
+// Last Revised: 4 August, 2020
 /*****************************************************************************/
 // Copyright 2007, David Taubman, The University of New South Wales (UNSW)
 /*****************************************************************************/

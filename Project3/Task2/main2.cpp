@@ -1,7 +1,7 @@
 /*****************************************************************************/
-// File: main1.cpp
+// File: main2.cpp
 // Author: David Taubman & Renee Lu
-// Last Revised: 22 July, 2020
+// Last Revised: 4 August, 2020
 /*****************************************************************************/
 // Copyright 2007, David Taubman, The University of New South Wales (UNSW)
 /*****************************************************************************/
@@ -170,7 +170,7 @@ main(int argc, char* argv[])
         }
         bmp_in__close(&in);
 
-        /*------------------------------- TASK 1 -------------------------------*/
+        /*------------------------------- TASK 2 -------------------------------*/
 
         // Symmetric extension for input
         for (n = 0; n < num_comps; n++)
