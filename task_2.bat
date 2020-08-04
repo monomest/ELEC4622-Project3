@@ -5,7 +5,7 @@ ECHO Task 2 Morphological Erosion
 ECHO -----------------------------------------------------------
 ECHO Performing the following commands...
 ECHO:
-ECHO lenna_mono
+ECHO lenna_bilevel
 ECHO Task2 ../Data/lenna_bilevel.bmp ../Data/out_2_cross.bmp 0 0 0 1 0 -1 1 0 -1 0
 Task2 ../Data/lenna_bilevel.bmp ../Data/out_2_cross.bmp 0 0 0 1 0 -1 1 0 -1 0
 ECHO:
