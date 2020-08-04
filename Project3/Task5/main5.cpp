@@ -109,8 +109,7 @@ void perform_opening(my_image_comp* in, my_image_comp* out,
         for (int n2 = 0; n2 < in->width; n2++)
         {
             float* p_n = in->buf + n1 * in->stride + n2;
-            float* op = out->handle + (border * out->stride) + border + n1 * out->stride + n2;
-            //         < ------------------- buf -------------------->  < --- coordinates ---->
+            float* op = out->buf + n1 * out->stride + n2;
             int val = 255;
             // Check location n to see whether
             // f[n + a[i]] != 0 for all i
@@ -285,7 +284,9 @@ main(int argc, char* argv[])
         // Increase dimensions by border for opening operation
         my_image_comp* output_comps = new my_image_comp[num_comps];
         for (n = 0; n < num_comps; n++)
-            output_comps[n].init(height+2*border, width+2*border, 0);
+            output_comps[n].init(height, width, border);
+        for (n = 0; n < num_comps; n++)
+            output_comps[n].perform_zero_padding();
 
         // Create sorted 1D vector A_off of size N
         // A_off = < a_off[0], a_off[1], ... , a_off[N-1] >
