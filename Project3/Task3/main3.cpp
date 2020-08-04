@@ -97,9 +97,10 @@ main(int argc, char* argv[])
         fprintf(stderr, "Usage: %s <input bmp file> <output bmp file> <radius r>\n", argv[0]);
         return -1;
     }
-    int r = abs(atoi(argv[3])); // Get the absolute value of the radius
+    int r = abs(atoi(argv[3]));         // Get the absolute value of the radius
+    int r_lim = (r + 0.5) * (r + 0.5);  // (r+0.5)^2
 
-    /* Midpoint Circle Drawing Algorithm for structuring set A */
+    /* Brute Force for Circular Structuring Set A */
     // Represent structuring set A by 2D vector of size N x M 
     // Create A containing N vectors of size M
     // A = < < a1[0], a2[0] >         ^
@@ -108,54 +109,20 @@ main(int argc, char* argv[])
     //              ...               |
     //       < a1[N-1], a2[N-1]> >    v
     // <------------- M -------------->
-    // Start: (r, 0)
-    int x = r, y = 0;
+    // Structuring Set A
     vector<vector<int>> A;
     // When radius is zero only a single 
     // point will be printed 
     if (r == 0)
         A.push_back({ 0, 0 });
-    else if (r > 0)
+    else
     {
-        // Get the extremes
-        A.push_back({ x, y });
-        A.push_back({ -x, y });
-        A.push_back({ y, x });
-        A.push_back({ y, -x });
-
-        // Initialising the value of decision parameter P
-        int P = 1 - r;
-        while (x > y)
-        {
-            y++;
-            // Mid-point is inside or on the perimeter 
-            if (P <= 0)
-                P = P + 2 * y + 1;
-            // Mid-point is outside the perimeter 
-            else
+        for (int y = -r; y <= r; y++)
+            for (int x = -r; x <= r; x++)
             {
-                x--;
-                P = P + 2 * y - 2 * x + 1;
+                if (x * x + y * y < r_lim)
+                    A.push_back({ x, y });
             }
-            // All the perimeter points have already been set
-            if (x < y)
-                break;
-            // Setting the generated point and its reflection 
-            // in the other octants after translation 
-            A.push_back({ x, y });
-            A.push_back({ -x, y });
-            A.push_back({ x, -y });
-            A.push_back({ -x, -y });
-            // If the generated point is on the line x = y then  
-            // the perimeter points have already been printed 
-            if (x != y)
-            {
-                A.push_back({ y, x });
-                A.push_back({ -y, x });
-                A.push_back({ y, -x });
-                A.push_back({ -y, -x });
-            }
-        }
     }
     
     /* Determine the border and A dimensions */
@@ -220,7 +187,7 @@ main(int argc, char* argv[])
             output_comps[n].init(height, width, 0);
         }
 
-        // Create 1D vector A_off of size N
+        // Create sorted 1D vector A_off of size N
         // A_off = < a_off[0], a_off[1], ... , a_off[N-1] >
         //        <------------------ N ------------------->
         vector<int> A_off;
@@ -230,6 +197,7 @@ main(int argc, char* argv[])
             int a_off = A[row][0] * S + A[row][1];
             A_off.push_back(a_off);
         }
+        sort(A_off.begin(), A_off.end());
         if (debug)
         {
             printf("------Debugging A_off------\n");

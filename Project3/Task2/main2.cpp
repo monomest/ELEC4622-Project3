@@ -193,7 +193,7 @@ main(int argc, char* argv[])
             int a_off = A[row][0] * S + A[row][1];
             A_off.push_back(a_off);
         }
-
+        sort(A_off.begin(), A_off.end());
         // Process the image, all in floating point (easy)
         for (n = 0; n < num_comps; n++)
             perform_erosion(input_comps + n, output_comps + n, A_off, N, debug);
