@@ -5,6 +5,7 @@ Renee Lu, z5160268 | August, 2020
 1. **Task 1** Monochrome to Bi-level Conversion
 2. **Task 2** Morphological Erosion
 3. **Task 3** Morphological Erosion with Circular Structuring Sets
+4. **Task 4** Zero padding vs. Symmetric Extension
 
 ## Code Location
 The solution file is found in:
