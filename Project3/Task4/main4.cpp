@@ -56,7 +56,7 @@ void my_image_comp::perform_boundary_extension()
 
 /*---------------------------------------------------------------------------*/
 /*                     my_image_comp::perform_zero_padding                   */
-/*                         Odd Symmetric Extension                           */
+/*                     Zero Padding Symmetric Extension                      */
 /*---------------------------------------------------------------------------*/
 
 void my_image_comp::perform_zero_padding()

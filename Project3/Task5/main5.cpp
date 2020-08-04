@@ -1,5 +1,5 @@
 /*****************************************************************************/
-// File: main2.cpp
+// File: main3.cpp
 // Author: David Taubman & Renee Lu
 // Last Revised: 4 August, 2020
 /*****************************************************************************/
@@ -54,6 +54,38 @@ void my_image_comp::perform_boundary_extension()
         }
 }
 
+/*---------------------------------------------------------------------------*/
+/*                     my_image_comp::perform_zero_padding                   */
+/*                     Zero Padding Symmetric Extension                      */
+/*---------------------------------------------------------------------------*/
+
+void my_image_comp::perform_zero_padding()
+{
+    int r, c;
+
+    // First extend upwards by border
+    float* first_line = buf;
+    for (r = 1; r <= border; r++)
+        for (c = 0; c < width; c++)
+            first_line[-r * stride + c] = 0;
+
+    // Now extend downwards by border
+    float* last_line = buf + (height - 1) * stride;
+    for (r = 1; r <= border; r++)
+        for (c = 0; c < width; c++)
+            last_line[r * stride + c] = 0;
+
+    // Now extend all rows to the left and to the right
+    float* left_edge = buf - border * stride;
+    float* right_edge = left_edge + width - 1;
+    for (r = height + 2 * border; r > 0; r--, left_edge += stride, right_edge += stride)
+        for (c = 1; c <= border; c++)
+        {
+            left_edge[-c] = 0;
+            right_edge[c] = 0;
+        }
+}
+
 /* ========================================================================= */
 /*                              Global Functions                             */
 /* ========================================================================= */
@@ -62,19 +94,39 @@ void my_image_comp::perform_boundary_extension()
 /*                               perform_erosion                             */
 /*---------------------------------------------------------------------------*/
 
-void perform_erosion(my_image_comp* in, my_image_comp* out, 
-    vector<int> &A_off, int N, int debug)
+void perform_opening(my_image_comp* in, my_image_comp* out,
+    vector<int>& A_off, int N, int border, int debug)
 {
-    // Perform the erosion
+    // Initialise output to 0
     for (int n1 = 0; n1 < out->height; n1++)
         for (int n2 = 0; n2 < out->width; n2++)
         {
-            float* p_n = in->buf + n1 * in->stride + n2;
             float* op = out->buf + n1 * out->stride + n2;
+            *op = 0;
+        }
+    // Opening
+    for (int n1 = 0; n1 < in->height; n1++)
+        for (int n2 = 0; n2 < in->width; n2++)
+        {
+            float* p_n = in->buf + n1 * in->stride + n2;
+            float* op = out->handle + (border * out->stride) + border + n1 * out->stride + n2;
+            //         < ------------------- buf -------------------->  < --- coordinates ---->
             int val = 255;
+            // Check location n to see whether
+            // f[n + a[i]] != 0 for all i
             for (int i = 0; i < N; i++)
+            {
                 val &= int(p_n[A_off.at(i)]);
-            *op = val;
+            }
+            // If f[n + a[i]] != 0 for all i then
+            // set output[n + a[i]] to 255 for all i
+            if (val == 255)
+            {
+                for (int i = 0; i < N; i++)
+                {
+                    op[A_off.at(i)] = val;
+                }
+            }
         }
 }
 
@@ -89,52 +141,106 @@ main(int argc, char* argv[])
     clock_t time = clock();
     int debug = 0;
 
-    /* Get the args */
-    if (argc < 5 || argc % 2 == 0)
+    /* Check input */
+    if (argc < 4)
     {
-        fprintf(stderr, "Usage: %s <input bmp file> <output bmp file> <pairs of A>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <input bmp file> <output bmp file> <radius r OR pairs of A>\n", argv[0]);
         return -1;
     }
-    // Represent structuring set A by 2D vector of size N x M 
-    // Create A containing N vectors of size M
-    // A = < < a1[0], a2[0] >         ^
-    //       < a1[1], a2[1] >         |
-    //       < a1[2], a2[2] >         N
-    //              ...               |
-    //       < a1[N-1], a2[N-1]> >    v
-    // <------------- M -------------->
-    int M = 2;                                      // Pair of coordinates
-    int N = (argc - 3) / 2;                         // Amount of coordinate pairs
-    vector<vector<int>> A(N, vector<int>(M, 0));    // n x m structuring set
-    int offset = 3;
-    int max_boundary = 0;
-    // Read in A from command line and find biggest value
-    for (int i = 0; i <= (N - 1) * 2; i += 2)
+
+    /* Declare the variables */
+    vector<vector<int>> A;  // Structuring Set A
+    int N = 0, M = 0;
+    int border = 0;
+
+    /* Get structuring set from args */
+    // Command line input is radius
+    if (argc == 4)
     {
-        A[i / 2][0] = atoi(argv[i + offset]);
-        A[i / 2][1] = atoi(argv[i + 1 + offset]);
-        if (max_boundary < max(abs(A[i / 2][0]), abs(A[i / 2][0])))
-            max_boundary = max(abs(A[i / 2][0]), abs(A[i / 2][0]));
-    }
-    // Print structuring set A
-    if (debug)
-    {
-        printf("Debugging A\n");
-        for (int row = 0; row < N; row++)
+        int r = abs(atoi(argv[3]));         // Get the absolute value of the radius
+        int r_lim = (r + 0.5) * (r + 0.5);  // (r+0.5)^2
+
+        /* Brute Force for Circular Structuring Set A */
+        // Represent structuring set A by 2D vector of size N x M 
+        // Create A containing N vectors of size M
+        // A = < < a1[0], a2[0] >         ^
+        //       < a1[1], a2[1] >         |
+        //       < a1[2], a2[2] >         N
+        //              ...               |
+        //       < a1[N-1], a2[N-1]> >    v
+        // <------------- M -------------->
+        // When radius is zero only a single 
+        // point will be printed 
+        if (r == 0)
+            A.push_back({ 0, 0 });
+        else
         {
-            for (int col = 0; col < M; col++)
-            {
-                printf("%d ", A[row][col]);
-            }
-            printf("\n");
+            for (int y = -r; y <= r; y++)
+                for (int x = -r; x <= r; x++)
+                {
+                    if (x * x + y * y < r_lim)
+                        A.push_back({ x, y });
+                }
         }
-        printf("Boundary: %d\n", max_boundary);
+
+        /* Determine the border and A dimensions */
+        // Border is radius
+        border = r;
+        N = A.size();   // N x M vector A   
+        // Debugging circle set
+        if (debug)
+        {
+            printf("------Debugging circle structuring set------\n");
+            for (int i = 0; i < N; i++)
+            {
+                printf("%d %d\n", A[i][0], A[i][1]);
+            }
+            printf("N = %d\n", N);
+        }
     }
+    // Command line input is structuring set
+    else
+    {
+        // Represent structuring set A by 2D vector of size N x M 
+        // Create A containing N vectors of size M
+        // A = < < a1[0], a2[0] >         ^
+        //       < a1[1], a2[1] >         |
+        //       < a1[2], a2[2] >         N
+        //              ...               |
+        //       < a1[N-1], a2[N-1]> >    v
+        // <------------- M -------------->
+        M = 2;                                      // Pair of coordinates
+        N = (argc - 3) / 2;                         // Amount of coordinate pairs
+        A.resize(N, vector<int>(M,0));              // n x m structuring set
+        int offset = 3;
+        int max_boundary = 0;
+        // Read in A from command line and find biggest value
+        for (int i = 0; i <= (N - 1) * 2; i += 2)
+        {
+            A[i / 2][0] = atoi(argv[i + offset]);
+            A[i / 2][1] = atoi(argv[i + 1 + offset]);
+            if (max_boundary < max(abs(A[i / 2][0]), abs(A[i / 2][0])))
+                max_boundary = max(abs(A[i / 2][0]), abs(A[i / 2][0]));
+        }
+        // Print structuring set A
+        if (debug)
+        {
+            printf("Debugging A\n");
+            for (int row = 0; row < N; row++)
+            {
+                for (int col = 0; col < M; col++)
+                {
+                    printf("%d ", A[row][col]);
+                }
+                printf("\n");
+            }
+            printf("Boundary: %d\n", max_boundary);
+        }
 
-    /* Determine the border */
-    // Border is max(upper boundary, lower boundary, left border, right border)
-    int border = max_boundary;
-
+        /* Determine the border */
+        // Border is max(upper boundary, lower boundary, left border, right border)
+        border = max_boundary;
+    }
     /* Create the input image storage */
     int err_code = 0;
     try {
@@ -169,20 +275,19 @@ main(int argc, char* argv[])
         }
         bmp_in__close(&in);
 
-        /*------------------------------- TASK 2 -------------------------------*/
+        /*------------------------------- TASK 5 -------------------------------*/
 
         // Symmetric extension for input
         for (n = 0; n < num_comps; n++)
             input_comps[n].perform_boundary_extension();
 
         // Allocate storage for the filtered output
+        // Increase dimensions by border for opening operation
         my_image_comp* output_comps = new my_image_comp[num_comps];
         for (n = 0; n < num_comps; n++)
-        {
-            output_comps[n].init(height, width, 0);
-        }
+            output_comps[n].init(height+2*border, width+2*border, 0);
 
-        // Create 1D vector A_off of size N
+        // Create sorted 1D vector A_off of size N
         // A_off = < a_off[0], a_off[1], ... , a_off[N-1] >
         //        <------------------ N ------------------->
         vector<int> A_off;
@@ -193,9 +298,19 @@ main(int argc, char* argv[])
             A_off.push_back(a_off);
         }
         sort(A_off.begin(), A_off.end());
+        if (debug)
+        {
+            printf("------Debugging A_off------\n");
+            for (int i = 0; i < A_off.size(); i++)
+            {
+                printf("%d ", A_off[i]);
+            }
+            printf("\n");
+        }
+
         // Process the image, all in floating point (easy)
         for (n = 0; n < num_comps; n++)
-            perform_erosion(input_comps + n, output_comps + n, A_off, N, debug);
+            perform_opening(input_comps + n, output_comps + n, A_off, N, border, debug);
 
         /*-------------------------------------------------------------------------*/
 
