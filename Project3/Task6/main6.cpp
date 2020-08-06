@@ -1,5 +1,5 @@
 /*****************************************************************************/
-// File: main5.cpp
+// File: main6.cpp
 // Author: David Taubman & Renee Lu
 // Last Revised: 4 August, 2020
 /*****************************************************************************/
@@ -91,41 +91,43 @@ void my_image_comp::perform_zero_padding()
 /* ========================================================================= */
 
 /*---------------------------------------------------------------------------*/
-/*                               perform_erosion                             */
+/*                      perform_greyscale_closing                            */
 /*---------------------------------------------------------------------------*/
 
-void perform_opening(my_image_comp* in, my_image_comp* out,
+void perform_greyscale_closing(my_image_comp* in, my_image_comp* out, my_image_comp* inter,
     vector<int>& A_off, int N, int border, int debug)
 {
-    // Initialise output to 0
-    for (int n1 = 0; n1 < out->height; n1++)
-        for (int n2 = 0; n2 < out->width; n2++)
-        {
-            float* op = out->buf + n1 * out->stride + n2;
-            *op = 0;
-        }
-    // Opening
+    // Greyscale Closing
+    // Find maximum
     for (int n1 = 0; n1 < in->height; n1++)
         for (int n2 = 0; n2 < in->width; n2++)
         {
             float* p_n = in->buf + n1 * in->stride + n2;
+            float* int_p = inter->buf + n1 * inter->stride + n2;
+            int max = 0;
+            // Find maximum of region
+            for (int n = 0; n < N; n++)
+            {
+                if (p_n[A_off.at(n)] > max)
+                    max = (p_n[A_off.at(n)]);
+            }
+            *int_p = max;
+        }
+    inter->perform_boundary_extension();
+    // Find minimum
+    for (int n1 = 0; n1 < out->height; n1++)
+        for (int n2 = 0; n2 < out->width; n2++)
+        {
+            float* p_n = inter->buf + n1 * inter->stride + n2;
             float* op = out->buf + n1 * out->stride + n2;
-            int val = 255;
-            // Check location n to see whether
-            // f[n + a[i]] != 0 for all i
-            for (int i = 0; i < N; i++)
+            int min = 255;
+            // Find minimum of region
+            for (int n = 0; n < N; n++)
             {
-                val &= int(p_n[A_off.at(i)]);
+                if (p_n[A_off.at(n)] < min)
+                    min = (p_n[A_off.at(n)]);
             }
-            // If f[n + a[i]] != 0 for all i then
-            // set output[n + a[i]] to 255 for all i
-            if (val == 255)
-            {
-                for (int i = 0; i < N; i++)
-                {
-                    op[A_off.at(i)] = val;
-                }
-            }
+            *op = min;
         }
 }
 
@@ -183,7 +185,7 @@ main(int argc, char* argv[])
         }
 
         /* Determine the border and A dimensions */
-        // Border is radius
+        // Border is twice radius because of greyscale closing
         border = r;
         N = A.size();   // N x M vector A   
         // Debugging circle set
@@ -210,7 +212,7 @@ main(int argc, char* argv[])
         // <------------- M -------------->
         M = 2;                                      // Pair of coordinates
         N = (argc - 3) / 2;                         // Amount of coordinate pairs
-        A.resize(N, vector<int>(M,0));              // n x m structuring set
+        A.resize(N, vector<int>(M, 0));              // n x m structuring set
         int offset = 3;
         int max_boundary = 0;
         // Read in A from command line and find biggest value
@@ -237,7 +239,7 @@ main(int argc, char* argv[])
         }
 
         /* Determine the border */
-        // Border is max(upper boundary, lower boundary, left border, right border)
+        // Border is twice the maximum because of greyscale closing
         border = max_boundary;
     }
     /* Create the input image storage */
@@ -274,19 +276,21 @@ main(int argc, char* argv[])
         }
         bmp_in__close(&in);
 
-        /*------------------------------- TASK 5 -------------------------------*/
+        /*------------------------------- TASK 6 -------------------------------*/
 
         // Symmetric extension for input
         for (n = 0; n < num_comps; n++)
             input_comps[n].perform_boundary_extension();
 
+        // Allocate storage for intermediate maximisation
+        my_image_comp* inter_comps = new my_image_comp[num_comps];
+        for (n = 0; n < num_comps; n++)
+            inter_comps[n].init(height, width, border);
+
         // Allocate storage for the filtered output
-        // Increase dimensions by border for opening operation
         my_image_comp* output_comps = new my_image_comp[num_comps];
         for (n = 0; n < num_comps; n++)
-            output_comps[n].init(height, width, border);
-        for (n = 0; n < num_comps; n++)
-            output_comps[n].perform_zero_padding();
+            output_comps[n].init(height, width, 0);
 
         // Create sorted 1D vector A_off of size N
         // A_off = < a_off[0], a_off[1], ... , a_off[N-1] >
@@ -309,9 +313,15 @@ main(int argc, char* argv[])
             printf("\n");
         }
 
+        // Create sorted 1D vector A_mirror of size N
+        vector<int> A_mirror;
+        for (int i = 0; i < N; i++)
+            A_mirror.push_back(A_off[i]);
+        sort(A_mirror.begin(), A_mirror.end());
+
         // Process the image, all in floating point (easy)
         for (n = 0; n < num_comps; n++)
-            perform_opening(input_comps + n, output_comps + n, A_off, N, border, debug);
+            perform_greyscale_closing(input_comps + n, output_comps + n, inter_comps + n, A_mirror, N, border, debug);
 
         /*-------------------------------------------------------------------------*/
 
