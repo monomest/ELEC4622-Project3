@@ -3,10 +3,11 @@ Renee Lu, z5160268 | August, 2020
 
 ## Tasks Overview
 1. **Task 1** Monochrome to Bi-level Conversion
-2. **Task 2** Morphological Erosion
-3. **Task 3** Morphological Erosion with Circular Structuring Sets
+2. **Task 2** Bi-level Morphological Erosion
+3. **Task 3** Bi-level Morphological Erosion with Circular Structuring Sets
 4. **Task 4** Zero Padding vs. Symmetric Extension
-5. **Task 5** Morphological Opening
+5. **Task 5** Bi-level Morphological Opening
+6. **Task 5** Greyscale Morphological Closing
 
 ## Code Location
 The solution file is found in:
@@ -19,6 +20,7 @@ The code for Task 1, 2 and 3 are in, respectively:
 - *Project3/Task4/main4.cpp*
 - *Project3/Task5/main5.cpp*
 - *Project3/Task6/main6.cpp*
+- *Project3/Task6/main6_inefficient.cpp* this is the inefficient version of main6.cpp
 
 ## Project Properties
 In Visual Studio, the non-default property configuration for the projects are:
@@ -39,4 +41,16 @@ To run Task 1 give the following command line arguments:
 [input bmp file path] [output bmp file path] [threshold T]
 
 To run Task 2 give the following command line arguments:
-[input bmp file path] [output bmp file path] [Structuring set location pairs]
+[input bmp file path] [output bmp file path] [structuring set location pairs]
+
+To run Task 3 give the following command line arguments:
+[input bmp file path] [output bmp file path] [radius r]
+
+To run Task 4 give the following command line arguments:
+[input bmp file path] [output bmp file path] [zero pad = 1 or 0]
+
+To run Task 5 give the following command line arguments:
+[input bmp file path] [output bmp file path] [structuring set location pairs OR radius r]
+
+To run Task 6 give the following command line arguments:
+[input bmp file path] [output bmp file path] [structuring set location pairs OR radius r]

@@ -16,6 +16,11 @@ ECHO:
 ECHO Task1 ../Data/lenna_mono.bmp ../Data/out_1_3.bmp 100
 Task1 ../Data/lenna_mono.bmp ../Data/out_1_3.bmp 100
 ECHO:
+cd ../
+cd Data
+mi_viewer out_1_1.bmp
+mi_viewer out_1_2.bmp
+mi_viewer out_1_3.bmp
+cd ../
 ECHO TASKS COMPLETE
 ECHO To view the output, use mi_viewer 'filepath'
-cd ../

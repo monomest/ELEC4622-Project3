@@ -1,7 +1,7 @@
 ///*****************************************************************************/
 //// File: main6_ineffecient.cpp
 //// Author: David Taubman & Renee Lu
-//// Last Revised: 4 August, 2020
+//// Last Revised: 7 August, 2020
 ///*****************************************************************************/
 //// Copyright 2007, David Taubman, The University of New South Wales (UNSW)
 ///*****************************************************************************/
