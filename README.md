@@ -5,9 +5,9 @@ Renee Lu, z5160268 | August, 2020
 1. **Task 1** Monochrome to Bi-level Conversion
 2. **Task 2** Bi-level Morphological Erosion
 3. **Task 3** Bi-level Morphological Erosion with Circular Structuring Sets
-4. **Task 4** Zero Padding vs. Symmetric Extension
+4. **Task 4 Bonus** Zero Padding vs. Symmetric Extension
 5. **Task 5** Bi-level Morphological Opening
-6. **Task 5** Greyscale Morphological Closing
+6. **Task 6 Bonus** Greyscale Morphological Closing
 
 ## Code Location
 The solution file is found in:
